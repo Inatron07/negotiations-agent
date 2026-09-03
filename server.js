@@ -26,17 +26,19 @@ const chatSDK = new ChatSDK({
 });
 
 // ---------- Credit usage tracking (scoped to this demo/site only) ----------
-// This is a separate, self-imposed budget for the public demo — it has no
-// relationship to the real EKB account's actual plan/usage. It approximates
-// the documented EKB credit model (platform action credits + LLM token
-// credits at Claude Sonnet 5 rates) since the SDK response doesn't expose
-// real token counts.
-const PLANNED_CREDITS = 1000;
+// This demo gets its OWN fresh 1,000-credit allocation to spend — separate
+// from, and not eaten into by, whatever the real EKB account had already
+// used (0.678k at the time this demo was set up). "Used" below is shown
+// inclusive of that 0.678k baseline for reference (so it reads consistently
+// with the EKB console), but only spending done through this demo itself
+// draws down the 1,000-credit allocation / the "remaining" figure.
+// Costs approximate the documented EKB credit model (platform action
+// credits + LLM token credits at Claude Sonnet 5 rates) since the SDK
+// response doesn't expose real token counts.
+const BASELINE_USED_CREDITS = 678; // already used on the real account before this demo existed
+const DEMO_ALLOCATED_CREDITS = 1000; // fresh credits given to this website/user to spend
 const SONNET_5_RATE = { inputPer1M: 2000, outputPer1M: 10000 }; // credits per 1M tokens
-// Seeded from the account's actual usage at the time this demo budget was carved out
-// (0.678k credits already used on the real EKB account) so the counter starts where
-// the account really stands, then accrues independently from there.
-let usedCredits = 678;
+let demoConsumedCredits = 0; // consumption by this demo only, against its own 1,000 allocation
 
 function estimateTokens(text) {
   // Rough heuristic: ~4 characters per token.
@@ -54,10 +56,12 @@ function estimateTurnCost(inputText, outputText) {
 }
 
 function usageSnapshot() {
-  const used = Math.min(Math.round(usedCredits), PLANNED_CREDITS);
-  const remaining = Math.max(PLANNED_CREDITS - used, 0);
-  const percent = Math.min(Math.round((used / PLANNED_CREDITS) * 100), 100);
-  return { used, planned: PLANNED_CREDITS, remaining, percent };
+  const consumed = Math.min(Math.round(demoConsumedCredits), DEMO_ALLOCATED_CREDITS);
+  const remaining = Math.max(DEMO_ALLOCATED_CREDITS - consumed, 0);
+  const used = BASELINE_USED_CREDITS + consumed;
+  const planned = BASELINE_USED_CREDITS + DEMO_ALLOCATED_CREDITS;
+  const percent = Math.min(Math.round((consumed / DEMO_ALLOCATED_CREDITS) * 100), 100);
+  return { used, planned, remaining, percent };
 }
 
 app.get("/healthz", (req, res) => {
@@ -78,7 +82,7 @@ app.post("/api/chat", async (req, res) => {
       });
     }
 
-    if (usedCredits >= PLANNED_CREDITS) {
+    if (demoConsumedCredits >= DEMO_ALLOCATED_CREDITS) {
       return res.status(402).json({
         error: "Credit limit reached.",
         details:
@@ -136,7 +140,7 @@ app.post("/api/chat", async (req, res) => {
       response?.text ||
       JSON.stringify(response, null, 2);
 
-    usedCredits += estimateTurnCost(message, reply);
+    demoConsumedCredits += estimateTurnCost(message, reply);
 
     res.json({
       chatId: activeChatId,
