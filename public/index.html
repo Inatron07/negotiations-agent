@@ -938,11 +938,20 @@
     localStorage.setItem(STORAGE_CREDIT_WARNED, JSON.stringify(creditWarned));
   }
 
+  // Formats a raw credit count the same way the EKB console does, e.g.
+  // 678 -> "0.678k", 1000 -> "1k" (so 678 reads as 0.678k, not "678" on
+  // its own which can look like 678,000 next to a "k"-scaled reference).
+  function formatCredits(n) {
+    if (!n) return "0";
+    let s = (n / 1000).toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
+    return s + "k";
+  }
+
   function updateCreditUI(usage) {
     if (!usage) return;
-    creditUsedVal.textContent = usage.used;
-    creditRemainingVal.textContent = usage.remaining;
-    creditPlannedVal.textContent = usage.planned;
+    creditUsedVal.textContent = formatCredits(usage.used);
+    creditRemainingVal.textContent = formatCredits(usage.remaining);
+    creditPlannedVal.textContent = formatCredits(usage.planned);
     creditBarFill.style.width = usage.percent + "%";
     creditBarFill.classList.toggle("warn", usage.percent >= 50 && usage.percent < 90);
     creditBarFill.classList.toggle("danger", usage.percent >= 90);
@@ -972,21 +981,21 @@
     if (usage.percent >= 100 && !creditWarned["100"]) {
       addBotMessage(
         "**Credit limit reached.** This Negotiations Agent (PoC) demo has used its full " +
-        usage.planned + "-credit allowance. Please contact the Dev team for more credits."
+        formatCredits(usage.planned) + " credit allowance. Please contact the Dev team for more credits."
       );
       creditWarned["100"] = true;
       saveCreditWarned();
     } else if (usage.percent >= 75 && !creditWarned["75"]) {
       addBotMessage(
         "⚠️ Heads up — this demo has used **" + usage.percent + "%** of its " +
-        usage.planned + "-credit allowance (" + usage.used + "/" + usage.planned + ")."
+        formatCredits(usage.planned) + " credit allowance (" + formatCredits(usage.used) + "/" + formatCredits(usage.planned) + ")."
       );
       creditWarned["75"] = true;
       saveCreditWarned();
     } else if (usage.percent >= 50 && !creditWarned["50"]) {
       addBotMessage(
         "ℹ️ This demo has used **" + usage.percent + "%** of its " +
-        usage.planned + "-credit allowance (" + usage.used + "/" + usage.planned + ")."
+        formatCredits(usage.planned) + " credit allowance (" + formatCredits(usage.used) + "/" + formatCredits(usage.planned) + ")."
       );
       creditWarned["50"] = true;
       saveCreditWarned();
