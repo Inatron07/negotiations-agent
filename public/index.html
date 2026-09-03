@@ -938,13 +938,13 @@
     localStorage.setItem(STORAGE_CREDIT_WARNED, JSON.stringify(creditWarned));
   }
 
-  // Formats a raw credit count the same way the EKB console does, e.g.
-  // 678 -> "0.678k", 1000 -> "1k" (so 678 reads as 0.678k, not "678" on
-  // its own which can look like 678,000 next to a "k"-scaled reference).
+  // Formats a credit figure as a plain number, trimmed to at most 3
+  // decimal places (e.g. 0.678, 999.32, 1000) — no unit conversion.
   function formatCredits(n) {
-    if (!n) return "0";
-    let s = (n / 1000).toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
-    return s + "k";
+    if (n === undefined || n === null) return "0";
+    if (Number.isInteger(n)) return String(n);
+    let s = n.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
+    return s;
   }
 
   function updateCreditUI(usage) {

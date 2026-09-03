@@ -33,10 +33,9 @@ const chatSDK = new ChatSDK({
 // real token counts.
 const PLANNED_CREDITS = 1000;
 const SONNET_5_RATE = { inputPer1M: 2000, outputPer1M: 10000 }; // credits per 1M tokens
-// Seeded from the account's actual usage at the time this demo budget was carved out
-// (0.678k credits already used on the real EKB account) so the counter starts where
-// the account really stands, then accrues independently from there.
-let usedCredits = 678;
+// Seeded at 0.678 (matching the "0.678k" figure shown on the real EKB account at the
+// time this demo budget was carved out) so Remaining starts at 1000 - 0.678 = 999.32.
+let usedCredits = 0.678;
 
 function estimateTokens(text) {
   // Rough heuristic: ~4 characters per token.
@@ -53,9 +52,13 @@ function estimateTurnCost(inputText, outputText) {
   return platformCredits + tokenCredits;
 }
 
+function round2(n) {
+  return Math.round(n * 100) / 100;
+}
+
 function usageSnapshot() {
-  const used = Math.min(Math.round(usedCredits), PLANNED_CREDITS);
-  const remaining = Math.max(PLANNED_CREDITS - used, 0);
+  const used = Math.min(round2(usedCredits), PLANNED_CREDITS);
+  const remaining = Math.max(round2(PLANNED_CREDITS - used), 0);
   const percent = Math.min(Math.round((used / PLANNED_CREDITS) * 100), 100);
   return { used, planned: PLANNED_CREDITS, remaining, percent };
 }
