@@ -25,6 +25,7 @@
     --text-accent: #4d3df0;
     --bg-accent-muted: #eeecff;
     --fill-success: #17a566;
+    --fill-danger: #e5484d;
     --radius: 12px;
     --shadow: 0 24px 60px rgba(20, 22, 30, 0.10);
   }
@@ -42,6 +43,7 @@
       --text-accent: #a9b4ff;
       --bg-accent-muted: #23264a;
       --fill-success: #22c57a;
+      --fill-danger: #f16569;
       --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
     }
   }
@@ -56,22 +58,189 @@
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
-  body {
+  body { overflow: hidden; }
+
+  .app-shell {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* --- Sidebar --- */
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--surface-2);
+    border-right: 0.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: margin-left 0.18s ease;
+  }
+
+  .sidebar.collapsed { margin-left: -261px; }
+
+  .sidebar-top {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 0.5px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 0 2px 6px;
+  }
+
+  .sidebar-brand i { font-size: 17px; color: var(--text-accent); }
+
+  .sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    border: 0.5px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+  }
+
+  .sidebar-btn:hover { border-color: var(--text-muted); }
+
+  .sidebar-btn.primary {
+    background: var(--text-accent);
+    color: #fff;
+    border-color: var(--text-accent);
+  }
+
+  .sidebar-btn.primary:hover { opacity: 0.9; }
+  .sidebar-btn i { font-size: 15px; }
+
+  .sidebar-history {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 10px;
+  }
+
+  .sidebar-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin: 4px 6px 6px;
+  }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 9px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .history-item i.ti-message { font-size: 14px; flex-shrink: 0; color: var(--text-muted); }
+
+  .history-item:hover { background: var(--surface-1); }
+
+  .history-item.active {
+    background: var(--bg-accent-muted);
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .history-item.active i.ti-message { color: var(--text-accent); }
+
+  .history-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .history-del {
+    opacity: 0;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 3px;
+    display: flex;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+
+  .history-item:hover .history-del { opacity: 1; }
+  .history-del:hover { color: var(--fill-danger); background: var(--surface-2); }
+  .history-del i { font-size: 13px; }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 14, 0.45);
+    display: none;
+    z-index: 90;
+  }
+
+  .sidebar-backdrop.active { display: block; }
+
+  @media (max-width: 760px) {
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 95;
+      margin-left: 0 !important;
+      transform: translateX(-100%);
+      transition: transform 0.18s ease;
+    }
+    .sidebar.mobile-open { transform: translateX(0); }
+  }
+
+  /* --- Main content --- */
+  .main-content {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 28px 18px 18px;
-    min-height: 100%;
+    padding: 22px 18px 18px;
   }
 
   .page-head {
     width: 100%;
     max-width: 720px;
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
     margin-bottom: 16px;
-    gap: 12px;
+  }
+
+  .page-head-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
   }
 
   .page-head h1 {
@@ -86,24 +255,22 @@
     color: var(--text-secondary);
   }
 
-  .page-head-actions button {
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     border: 0.5px solid var(--border);
     background: var(--surface-1);
     color: var(--text-secondary);
-    border-radius: 8px;
-    padding: 7px 12px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
   }
 
-  .page-head-actions button:hover {
-    color: var(--text);
-    border-color: var(--text-muted);
-  }
+  .icon-btn:hover { color: var(--text); border-color: var(--text-muted); }
+  .icon-btn i { font-size: 15px; }
 
   .chat-shell {
     width: 100%;
@@ -146,30 +313,14 @@
     flex-shrink: 0;
   }
 
-  .chat-header .avatar i {
-    font-size: 17px;
-    color: var(--text-accent);
-  }
+  .chat-header .avatar i { font-size: 17px; color: var(--text-accent); }
 
   .chat-header-title { flex: 1; min-width: 0; }
 
-  .chat-header-title p:first-child {
-    font-weight: 600;
-    font-size: 14px;
-    margin: 0;
-  }
+  .chat-header-title p:first-child { font-weight: 600; font-size: 14px; margin: 0; }
+  .chat-header-title p:last-child { font-size: 12px; color: var(--text-muted); margin: 0; }
 
-  .chat-header-title p:last-child {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin: 0;
-  }
-
-  .chat-header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .chat-header-right { display: flex; align-items: center; gap: 12px; }
 
   .online-pill {
     display: flex;
@@ -180,33 +331,7 @@
     white-space: nowrap;
   }
 
-  .online-pill .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--fill-success);
-  }
-
-  .icon-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    border: 0.5px solid var(--border);
-    background: var(--surface-1);
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .icon-btn:hover {
-    color: var(--text);
-    border-color: var(--text-muted);
-  }
-
-  .icon-btn i { font-size: 15px; }
+  .online-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fill-success); }
 
   .chat-body {
     flex: 1;
@@ -218,17 +343,8 @@
     gap: 14px;
   }
 
-  .msg-row {
-    display: flex;
-    gap: 10px;
-    max-width: 92%;
-  }
-
-  .msg-row.user {
-    align-self: flex-end;
-    justify-content: flex-end;
-    max-width: 80%;
-  }
+  .msg-row { display: flex; gap: 10px; max-width: 92%; }
+  .msg-row.user { align-self: flex-end; justify-content: flex-end; max-width: 80%; }
 
   .msg-row .avatar-sm {
     width: 26px;
@@ -242,10 +358,7 @@
     margin-top: 1px;
   }
 
-  .msg-row .avatar-sm i {
-    font-size: 13px;
-    color: var(--text-accent);
-  }
+  .msg-row .avatar-sm i { font-size: 13px; color: var(--text-accent); }
 
   .bubble {
     background: var(--surface-1);
@@ -256,9 +369,7 @@
     overflow-x: auto;
   }
 
-  .msg-row.user .bubble {
-    background: var(--bg-accent-muted);
-  }
+  .msg-row.user .bubble { background: var(--bg-accent-muted); }
 
   .bubble p { margin: 0 0 8px; }
   .bubble p:last-child { margin-bottom: 0; }
@@ -279,69 +390,26 @@
     overflow-x: auto;
   }
   .bubble pre code { background: none; padding: 0; }
-  .bubble table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 8px 0;
-    font-size: 13px;
-  }
-  .bubble th, .bubble td {
-    border: 0.5px solid var(--border);
-    padding: 6px 8px;
-    text-align: left;
-  }
+  .bubble table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 13px; }
+  .bubble th, .bubble td { border: 0.5px solid var(--border); padding: 6px 8px; text-align: left; }
   .bubble th { background: var(--surface-2); font-weight: 600; }
   .bubble a { color: var(--text-accent); }
   .bubble strong { font-weight: 600; }
 
   /* --- Intro / PR summary cards, seeded on first load --- */
-  .pr-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 0 0 8px;
-  }
+  .pr-cards { display: flex; flex-direction: column; gap: 8px; margin: 0 0 8px; }
+  .pr-card { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 8px 10px; }
+  .pr-card .pr-title { margin: 0; font-weight: 600; font-size: 13.5px; }
+  .pr-card .pr-sub { margin: 2px 0 0; color: var(--text-secondary); font-size: 12.5px; }
 
-  .pr-card {
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 8px 10px;
-  }
-
-  .pr-card .pr-title {
-    margin: 0;
-    font-weight: 600;
-    font-size: 13.5px;
-  }
-
-  .pr-card .pr-sub {
-    margin: 2px 0 0;
-    color: var(--text-secondary);
-    font-size: 12.5px;
-  }
-
-  .typing-dots {
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
-    padding: 3px 0;
-  }
-
+  .typing-dots { display: inline-flex; gap: 4px; align-items: center; padding: 3px 0; }
   .typing-dots span {
-    width: 6px;
-    height: 6px;
-    background: var(--text-muted);
-    border-radius: 50%;
-    animation: blink 1.2s infinite ease-in-out;
+    width: 6px; height: 6px; background: var(--text-muted);
+    border-radius: 50%; animation: blink 1.2s infinite ease-in-out;
   }
-
   .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
   .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
-
-  @keyframes blink {
-    0%, 80%, 100% { opacity: 0.25; }
-    40% { opacity: 1; }
-  }
+  @keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
 
   .chat-input-row {
     border-top: 0.5px solid var(--border);
@@ -365,42 +433,20 @@
     font-family: inherit;
   }
 
-  .chat-input-row input::placeholder {
-    color: var(--text-muted);
-  }
-
-  .chat-input-row input:focus {
-    border-color: var(--text-accent);
-  }
+  .chat-input-row input::placeholder { color: var(--text-muted); }
+  .chat-input-row input:focus { border-color: var(--text-accent); }
 
   .send-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    border: none;
-    background: var(--text-accent);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 10px; border: none;
+    background: var(--text-accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
   }
 
-  .send-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .send-btn i { font-size: 16px; }
 
-  .quick-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 0 16px 12px;
-  }
-
+  .quick-actions { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
   .quick-actions button {
     border: 0.5px solid var(--border);
     background: var(--surface-1);
@@ -411,22 +457,63 @@
     font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
+    font-family: inherit;
+  }
+  .quick-actions button:hover { color: var(--text-accent); border-color: var(--text-accent); }
+
+  .footnote { text-align: center; font-size: 11.5px; color: var(--text-muted); margin-top: 12px; }
+
+  /* --- About / Read me modal --- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 14, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
   }
 
-  .quick-actions button:hover {
-    color: var(--text-accent);
-    border-color: var(--text-accent);
+  .modal-overlay.active { display: flex; }
+
+  .modal-card {
+    background: var(--surface-1);
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 26px 28px;
+    position: relative;
+    box-shadow: var(--shadow);
   }
 
-  .footnote {
-    text-align: center;
-    font-size: 11.5px;
+  .modal-card h2 { margin: 0 0 6px; font-size: 18px; padding-right: 24px; }
+  .modal-card > p { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin: 0 0 4px; }
+  .modal-card h3 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted); margin: 20px 0 8px;
+  }
+  .modal-card ul { padding-left: 20px; margin: 6px 0; }
+  .modal-card li { font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); margin: 6px 0; }
+  .modal-card strong { color: var(--text); }
+
+  .modal-close { position: absolute; top: 14px; right: 14px; }
+
+  .modal-footer {
+    margin-top: 22px;
+    padding-top: 14px;
+    border-top: 0.5px solid var(--border);
+    font-size: 12px;
     color: var(--text-muted);
-    margin-top: 12px;
+    text-align: center;
+    letter-spacing: 0.02em;
   }
 
   @media (max-width: 560px) {
-    body { padding: 16px 10px 10px; }
+    .main-content { padding: 16px 10px 10px; }
     .msg-row { max-width: 96%; }
     .msg-row.user { max-width: 88%; }
   }
@@ -434,62 +521,115 @@
 </head>
 <body>
 
-<div class="page-head">
-  <div>
-    <h1>Negotiations Agent</h1>
-    <p>Buyer copilot for PR review, market benchmarking, vendor risk &amp; negotiation strategy</p>
-  </div>
-  <div class="page-head-actions">
-    <button id="clearBtn" type="button"><i class="ti ti-refresh"></i> New chat</button>
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-brand"><i class="ti ti-triangle"></i> Negotiations Agent</div>
+      <button id="newChatBtn" class="sidebar-btn primary" type="button"><i class="ti ti-plus"></i> New chat</button>
+      <button id="aboutBtn" class="sidebar-btn" type="button"><i class="ti ti-info-circle"></i> About / Read me</button>
+    </div>
+    <div class="sidebar-history">
+      <p class="sidebar-label">History</p>
+      <div id="historyList"></div>
+    </div>
+  </aside>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="main-content">
+
+    <div class="page-head">
+      <div class="page-head-left">
+        <button id="sidebarToggle" class="icon-btn" type="button" aria-label="Toggle sidebar"><i class="ti ti-layout-sidebar"></i></button>
+        <div>
+          <h1>Negotiations Agent</h1>
+          <p>Buyer copilot for PR review, market benchmarking, vendor risk &amp; negotiation strategy</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-shell">
+      <div class="chat-card">
+
+        <div class="chat-header">
+          <div class="avatar"><i class="ti ti-triangle"></i></div>
+          <div class="chat-header-title">
+            <p>Negotiations agent</p>
+            <p>Buyer copilot &middot; live</p>
+          </div>
+          <div class="chat-header-right">
+            <div class="online-pill"><span class="dot"></span>Online</div>
+          </div>
+        </div>
+
+        <div id="chatBody" class="chat-body"></div>
+
+        <div class="quick-actions">
+          <button type="button" data-prompt="Why is Vendor D L1 on the pump line?">Why is Vendor D L1?</button>
+          <button type="button" data-prompt="Which lines on PR-45821 are ready for a price event?">Lines ready for a price event</button>
+          <button type="button" data-prompt="How does Vendor D's rate on PR-45821 compare to the market benchmark?">Compare to market benchmark</button>
+          <button type="button" data-prompt="Flag the outlier bid on PR-45821 and explain why it looks off.">Explain the outlier bid</button>
+          <button type="button" data-prompt="Which vendors on PR-45821 carry the most risk, and why?">Vendor risk on PR-45821</button>
+          <button type="button" data-prompt="What's a good opening negotiation strategy for PR-45900?">Negotiation strategy for PR-45900</button>
+        </div>
+
+        <div class="chat-input-row">
+          <input id="userInput" type="text" placeholder="Ask about a PR, vendor, market benchmark, or negotiation strategy" autocomplete="off" />
+          <button id="sendBtn" class="send-btn" aria-label="Send"><i class="ti ti-arrow-up"></i></button>
+        </div>
+
+      </div>
+
+      <p class="footnote">Answers are generated by an AI agent grounded on your PR, vendor &amp; market-intelligence data — verify before acting.</p>
+    </div>
+
   </div>
 </div>
 
-<div class="chat-shell">
-  <div class="chat-card">
+<div id="aboutModal" class="modal-overlay">
+  <div class="modal-card">
+    <button id="aboutClose" class="icon-btn modal-close" type="button" aria-label="Close"><i class="ti ti-x"></i></button>
+    <h2>Negotiations Agent — Read Me</h2>
+    <p>An AI buyer copilot for the procurement negotiation workflow, grounded on real purchase requisition (PR), vendor bid, and market-intelligence data via Automation Anywhere's EKB (Enterprise Knowledge Base) GenAI agent layer.</p>
 
-    <div class="chat-header">
-      <div class="avatar"><i class="ti ti-triangle"></i></div>
-      <div class="chat-header-title">
-        <p>Negotiations agent</p>
-        <p>Buyer copilot &middot; live</p>
-      </div>
-      <div class="chat-header-right">
-        <div class="online-pill"><span class="dot"></span>Online</div>
-      </div>
-    </div>
+    <h3>Features</h3>
+    <ul>
+      <li><strong>PR &amp; vendor bid review</strong> — line-by-line commercial evaluation, normalized for freight, GST, warranty, delivery and payment terms.</li>
+      <li><strong>Market benchmarking</strong> — compares evaluated vendor rates against market-median pricing and suggests negotiation targets.</li>
+      <li><strong>Outlier &amp; vendor risk detection</strong> — flags price outliers and assesses vendor financial/delivery risk and dependency.</li>
+      <li><strong>Negotiation strategy &amp; playbooks</strong> — recommends an approach (monitor, controlled negotiation, or auction) with target and stretch pricing.</li>
+      <li><strong>Auction recommendations</strong> — checks auction eligibility and suggests a format (reverse, Japanese, or Dutch).</li>
+    </ul>
 
-    <div id="chatBody" class="chat-body"></div>
+    <h3>How to use</h3>
+    <ul>
+      <li>Type a question about a PR, vendor, market benchmark, or negotiation strategy — or tap a quick-action chip to jump straight in.</li>
+      <li>Use <strong>New chat</strong> in the sidebar to start a fresh conversation; past chats stay in the history list and can be reopened any time.</li>
+      <li>Answers are AI-generated and grounded on the loaded procurement data — always verify before acting on a recommendation.</li>
+    </ul>
 
-    <div class="quick-actions">
-      <button type="button" data-prompt="Why is Vendor D L1 on the pump line?">Why is Vendor D L1?</button>
-      <button type="button" data-prompt="Which lines on PR-45821 are ready for a price event?">Lines ready for a price event</button>
-      <button type="button" data-prompt="How does Vendor D's rate on PR-45821 compare to the market benchmark?">Compare to market benchmark</button>
-      <button type="button" data-prompt="Flag the outlier bid on PR-45821 and explain why it looks off.">Explain the outlier bid</button>
-      <button type="button" data-prompt="Which vendors on PR-45821 carry the most risk, and why?">Vendor risk on PR-45821</button>
-      <button type="button" data-prompt="What's a good opening negotiation strategy for PR-45900?">Negotiation strategy for PR-45900</button>
-    </div>
-
-    <div class="chat-input-row">
-      <input id="userInput" type="text" placeholder="Ask about a PR, vendor, market benchmark, or negotiation strategy" autocomplete="off" />
-      <button id="sendBtn" class="send-btn" aria-label="Send"><i class="ti ti-arrow-up"></i></button>
-    </div>
-
+    <div class="modal-footer">Negotiations PoC</div>
   </div>
-
-  <p class="footnote">Answers are generated by an AI agent grounded on your PR, vendor &amp; market-intelligence data — verify before acting.</p>
 </div>
 
 <script>
-  const STORAGE_CHAT_ID = "negotiations_agent_chat_id";
-  const STORAGE_MESSAGES = "negotiations_agent_messages";
-
-  let chatId = localStorage.getItem(STORAGE_CHAT_ID) || null;
-  let messages = JSON.parse(localStorage.getItem(STORAGE_MESSAGES) || "[]");
+  const STORAGE_SESSIONS = "negotiations_agent_sessions_v2";
+  const STORAGE_ACTIVE = "negotiations_agent_active_v2";
+  const LEGACY_CHAT_ID = "negotiations_agent_chat_id";
+  const LEGACY_MESSAGES = "negotiations_agent_messages";
 
   const chatBody = document.getElementById("chatBody");
   const userInput = document.getElementById("userInput");
   const sendBtn = document.getElementById("sendBtn");
-  const clearBtn = document.getElementById("clearBtn");
+  const newChatBtn = document.getElementById("newChatBtn");
+  const historyList = document.getElementById("historyList");
+  const sidebar = document.getElementById("sidebar");
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+  const aboutModal = document.getElementById("aboutModal");
+  const aboutBtn = document.getElementById("aboutBtn");
+  const aboutClose = document.getElementById("aboutClose");
 
   marked.setOptions({ breaks: true, gfm: true });
 
@@ -508,6 +648,66 @@
     <p style="margin:0;">What would you like to dig into?</p>
   `;
 
+  // ---------- Session storage ----------
+
+  function newSessionObject() {
+    return {
+      id: "s_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      chatId: null,
+      title: "New chat",
+      messages: [],
+      updatedAt: Date.now()
+    };
+  }
+
+  function deriveTitle(session) {
+    const firstUser = session.messages.find((m) => m.sender === "user");
+    if (!firstUser) return "New chat";
+    const t = firstUser.text.trim().replace(/\s+/g, " ");
+    return t.length > 42 ? t.slice(0, 42) + "…" : t;
+  }
+
+  function saveSessions() { localStorage.setItem(STORAGE_SESSIONS, JSON.stringify(sessions)); }
+  function saveActiveId() { localStorage.setItem(STORAGE_ACTIVE, activeId || ""); }
+  function getActive() { return sessions.find((s) => s.id === activeId); }
+
+  function migrateLegacy() {
+    const oldChatId = localStorage.getItem(LEGACY_CHAT_ID);
+    const oldMessages = JSON.parse(localStorage.getItem(LEGACY_MESSAGES) || "[]");
+    if (oldMessages.length > 0) {
+      const s = newSessionObject();
+      s.chatId = oldChatId || null;
+      s.messages = oldMessages;
+      s.title = deriveTitle(s);
+      sessions.unshift(s);
+    }
+    localStorage.removeItem(LEGACY_CHAT_ID);
+    localStorage.removeItem(LEGACY_MESSAGES);
+  }
+
+  let sessions = JSON.parse(localStorage.getItem(STORAGE_SESSIONS) || "[]");
+  let activeId = localStorage.getItem(STORAGE_ACTIVE) || null;
+
+  if (sessions.length === 0) migrateLegacy();
+  if (sessions.length === 0) {
+    const s = newSessionObject();
+    sessions.push(s);
+    activeId = s.id;
+  }
+  if (!activeId || !sessions.find((s) => s.id === activeId)) {
+    activeId = sessions[0].id;
+  }
+  saveSessions();
+  saveActiveId();
+
+  // ---------- Rendering ----------
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
   function botAvatar() {
     const el = document.createElement("div");
     el.className = "avatar-sm";
@@ -519,42 +719,30 @@
     return DOMPurify.sanitize(marked.parse(String(text || "")));
   }
 
-  function addRow({ sender, html, save = true, rawText = "" }) {
+  function addRow(sender, html) {
     const row = document.createElement("div");
     row.className = "msg-row " + (sender === "user" ? "user" : "bot");
-
-    if (sender === "bot") {
-      row.appendChild(botAvatar());
-    }
-
+    if (sender === "bot") row.appendChild(botAvatar());
     const bubble = document.createElement("div");
     bubble.className = "bubble";
     bubble.innerHTML = html;
     row.appendChild(bubble);
-
     chatBody.appendChild(row);
     chatBody.scrollTop = chatBody.scrollHeight;
-
-    if (save) {
-      messages.push({ sender, text: rawText || html });
-      localStorage.setItem(STORAGE_MESSAGES, JSON.stringify(messages));
-    }
-
     return row;
   }
 
-  function addUserMessage(text, save = true) {
-    return addRow({ sender: "user", html: DOMPurify.sanitize(text).replace(/\\n/g, "<br>"), save, rawText: text });
+  function addUserMessage(text) {
+    return addRow("user", DOMPurify.sanitize(text).replace(/\n/g, "<br>"));
   }
 
-  function addBotMessage(text, save = true) {
-    return addRow({ sender: "bot", html: renderMarkdown(text), save, rawText: text });
+  function addBotMessage(text) {
+    return addRow("bot", renderMarkdown(text));
   }
 
   function addTyping() {
     const row = document.createElement("div");
     row.className = "msg-row bot";
-    row.id = "typingRow";
     row.appendChild(botAvatar());
     const bubble = document.createElement("div");
     bubble.className = "bubble";
@@ -566,38 +754,107 @@
   }
 
   function renderFallbackIntro() {
-    addRow({ sender: "bot", html: SEED_HTML, save: false });
+    addRow("bot", SEED_HTML);
   }
 
-  function renderHistory() {
+  function renderActiveChat() {
+    const session = getActive();
     chatBody.innerHTML = "";
-    messages.forEach((m) => {
-      if (m.sender === "user") {
-        addRow({ sender: "user", html: DOMPurify.sanitize(m.text).replace(/\\n/g, "<br>"), save: false });
-      } else {
-        addRow({ sender: "bot", html: renderMarkdown(m.text), save: false });
-      }
+    if (session.messages.length === 0) {
+      sendMessage("Hi", { silent: true });
+    } else {
+      session.messages.forEach((m) => {
+        addRow(m.sender, m.sender === "user"
+          ? DOMPurify.sanitize(m.text).replace(/\n/g, "<br>")
+          : renderMarkdown(m.text));
+      });
+    }
+  }
+
+  function relTime(ts) {
+    const day = 86400000;
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+    const startOfThat = new Date(ts); startOfThat.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((startOfToday - startOfThat) / day);
+    if (diffDays <= 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return diffDays + "d ago";
+    return new Date(ts).toLocaleDateString([], { month: "short", day: "numeric" });
+  }
+
+  function renderSidebar() {
+    const list = sessions.slice().sort((a, b) => b.updatedAt - a.updatedAt);
+    historyList.innerHTML = "";
+    list.forEach((s) => {
+      const item = document.createElement("div");
+      item.className = "history-item" + (s.id === activeId ? " active" : "");
+      item.innerHTML =
+        '<i class="ti ti-message"></i>' +
+        '<span class="history-title" title="' + escapeHtml(s.title) + '">' + escapeHtml(s.title) + '</span>' +
+        '<span class="history-title" style="flex:none;color:var(--text-muted);font-size:11px;">' + relTime(s.updatedAt) + '</span>' +
+        '<button class="history-del" type="button" aria-label="Delete chat"><i class="ti ti-x"></i></button>';
+      item.addEventListener("click", () => switchSession(s.id));
+      item.querySelector(".history-del").addEventListener("click", (e) => deleteSession(s.id, e));
+      historyList.appendChild(item);
     });
   }
 
+  // ---------- Session actions ----------
+
+  function newChat() {
+    const s = newSessionObject();
+    sessions.unshift(s);
+    activeId = s.id;
+    saveSessions();
+    saveActiveId();
+    renderSidebar();
+    renderActiveChat();
+    closeSidebarOnMobile();
+  }
+
+  function switchSession(id) {
+    if (id === activeId) return;
+    activeId = id;
+    saveActiveId();
+    renderSidebar();
+    renderActiveChat();
+    closeSidebarOnMobile();
+  }
+
+  function deleteSession(id, ev) {
+    ev.stopPropagation();
+    sessions = sessions.filter((s) => s.id !== id);
+    if (sessions.length === 0) sessions.push(newSessionObject());
+    if (id === activeId) {
+      activeId = sessions[0].id;
+      saveActiveId();
+      renderActiveChat();
+    }
+    saveSessions();
+    renderSidebar();
+  }
+
+  // ---------- Chat ----------
+
   async function sendMessage(text, opts) {
     const options = opts || {};
+    const session = getActive();
     const message = (text !== undefined ? text : userInput.value).trim();
     if (!message) return;
 
     if (!options.silent) {
       addUserMessage(message);
+      session.messages.push({ sender: "user", text: message });
       userInput.value = "";
     }
     sendBtn.disabled = true;
-
     const typing = addTyping();
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, chatId })
+        body: JSON.stringify({ message, chatId: session.chatId })
       });
 
       const data = await response.json();
@@ -607,60 +864,96 @@
         if (options.silent) {
           renderFallbackIntro();
         } else {
-          addBotMessage(`**Unable to process request.**\\n\\n${data.details || data.error || "Unknown error"}`);
+          const errText = `**Unable to process request.**\n\n${data.details || data.error || "Unknown error"}`;
+          addBotMessage(errText);
+          session.messages.push({ sender: "bot", text: errText });
         }
         console.error(data);
         return;
       }
 
-      chatId = data.chatId;
-      localStorage.setItem(STORAGE_CHAT_ID, chatId);
+      session.chatId = data.chatId;
       addBotMessage(data.reply);
+      session.messages.push({ sender: "bot", text: data.reply });
 
     } catch (error) {
       typing.remove();
       if (options.silent) {
         renderFallbackIntro();
       } else {
-        addBotMessage("**Unable to connect to the backend.**\\n\\nPlease check that the server is running.");
+        const errText = "**Unable to connect to the backend.**\n\nPlease check that the server is running.";
+        addBotMessage(errText);
+        session.messages.push({ sender: "bot", text: errText });
       }
       console.error(error);
     } finally {
+      session.title = deriveTitle(session);
+      session.updatedAt = Date.now();
+      saveSessions();
+      renderSidebar();
       sendBtn.disabled = false;
       userInput.focus();
     }
-  }
-
-  function startConversation() {
-    chatBody.innerHTML = "";
-    if (messages.length === 0) {
-      // Kick the live agent for its own opening turn (grounded on real data)
-      // instead of showing static placeholder text.
-      sendMessage("Hi", { silent: true });
-    } else {
-      renderHistory();
-    }
-  }
-
-  function clearChat() {
-    chatId = null;
-    messages = [];
-    localStorage.removeItem(STORAGE_CHAT_ID);
-    localStorage.removeItem(STORAGE_MESSAGES);
-    startConversation();
   }
 
   sendBtn.addEventListener("click", () => sendMessage());
   userInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendMessage();
   });
-  clearBtn.addEventListener("click", clearChat);
+  newChatBtn.addEventListener("click", newChat);
 
   document.querySelectorAll(".quick-actions button").forEach((btn) => {
     btn.addEventListener("click", () => sendMessage(btn.dataset.prompt));
   });
 
-  startConversation();
+  // ---------- Sidebar toggle (responsive) ----------
+
+  function isMobile() { return window.matchMedia("(max-width: 760px)").matches; }
+
+  let sidebarOpen = !isMobile();
+
+  function applySidebarState() {
+    if (isMobile()) {
+      sidebar.classList.remove("collapsed");
+      sidebar.classList.toggle("mobile-open", sidebarOpen);
+      sidebarBackdrop.classList.toggle("active", sidebarOpen);
+    } else {
+      sidebar.classList.remove("mobile-open");
+      sidebarBackdrop.classList.remove("active");
+      sidebar.classList.toggle("collapsed", !sidebarOpen);
+    }
+  }
+
+  function closeSidebarOnMobile() {
+    if (isMobile()) {
+      sidebarOpen = false;
+      applySidebarState();
+    }
+  }
+
+  sidebarToggle.addEventListener("click", () => {
+    sidebarOpen = !sidebarOpen;
+    applySidebarState();
+  });
+  sidebarBackdrop.addEventListener("click", () => {
+    sidebarOpen = false;
+    applySidebarState();
+  });
+  window.addEventListener("resize", applySidebarState);
+  applySidebarState();
+
+  // ---------- About modal ----------
+
+  aboutBtn.addEventListener("click", () => aboutModal.classList.add("active"));
+  aboutClose.addEventListener("click", () => aboutModal.classList.remove("active"));
+  aboutModal.addEventListener("click", (e) => {
+    if (e.target === aboutModal) aboutModal.classList.remove("active");
+  });
+
+  // ---------- Init ----------
+
+  renderSidebar();
+  renderActiveChat();
 </script>
 
 </body>
