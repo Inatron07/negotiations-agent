@@ -33,7 +33,10 @@ const chatSDK = new ChatSDK({
 // real token counts.
 const PLANNED_CREDITS = 1000;
 const SONNET_5_RATE = { inputPer1M: 2000, outputPer1M: 10000 }; // credits per 1M tokens
-let usedCredits = 0;
+// Seeded from the account's actual usage at the time this demo budget was carved out
+// (0.678k credits already used on the real EKB account) so the counter starts where
+// the account really stands, then accrues independently from there.
+let usedCredits = 678;
 
 function estimateTokens(text) {
   // Rough heuristic: ~4 characters per token.
