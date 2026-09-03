@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Negotiations Agent — Buyer Copilot</title>
+<meta name="description" content="Negotiations agent: a buyer copilot for reviewing purchase requisitions, comparing vendor bids, and working negotiation strategy." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+
+<style>
+  :root {
+    --bg: #f2f3f7;
+    --surface-1: #ffffff;
+    --surface-2: #fbfbfd;
+    --border: #e3e5eb;
+    --text: #14161a;
+    --text-secondary: #565b66;
+    --text-muted: #8b909b;
+    --bg-accent: #eae8ff;
+    --text-accent: #4d3df0;
+    --bg-accent-muted: #eeecff;
+    --fill-success: #17a566;
+    --radius: 12px;
+    --shadow: 0 24px 60px rgba(20, 22, 30, 0.10);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0c10;
+      --surface-1: #17191f;
+      --surface-2: #1c1f27;
+      --border: #2a2d36;
+      --text: #e9eaef;
+      --text-secondary: #a7acb8;
+      --text-muted: #767c8a;
+      --bg-accent: #2b2470;
+      --text-accent: #a9b4ff;
+      --bg-accent-muted: #23264a;
+      --fill-success: #22c57a;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 18px 18px;
+    min-height: 100%;
+  }
+
+  .page-head {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .page-head h1 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .page-head p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .page-head-actions button {
+    border: 0.5px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .page-head-actions button:hover {
+    color: var(--text);
+    border-color: var(--text-muted);
+  }
+
+  .chat-shell {
+    width: 100%;
+    max-width: 720px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .chat-card {
+    background: var(--surface-2);
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    box-shadow: var(--shadow);
+  }
+
+  .chat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 0.5px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .chat-header .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--bg-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .chat-header .avatar i {
+    font-size: 17px;
+    color: var(--text-accent);
+  }
+
+  .chat-header-title { flex: 1; min-width: 0; }
+
+  .chat-header-title p:first-child {
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .chat-header-title p:last-child {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .chat-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .online-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .online-pill .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--fill-success);
+  }
+
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 0.5px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .icon-btn:hover {
+    color: var(--text);
+    border-color: var(--text-muted);
+  }
+
+  .icon-btn i { font-size: 15px; }
+
+  .chat-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .msg-row {
+    display: flex;
+    gap: 10px;
+    max-width: 92%;
+  }
+
+  .msg-row.user {
+    align-self: flex-end;
+    justify-content: flex-end;
+    max-width: 80%;
+  }
+
+  .msg-row .avatar-sm {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: var(--bg-accent);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+
+  .msg-row .avatar-sm i {
+    font-size: 13px;
+    color: var(--text-accent);
+  }
+
+  .bubble {
+    background: var(--surface-1);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+
+  .msg-row.user .bubble {
+    background: var(--bg-accent-muted);
+  }
+
+  .bubble p { margin: 0 0 8px; }
+  .bubble p:last-child { margin-bottom: 0; }
+  .bubble ul, .bubble ol { margin: 6px 0; padding-left: 20px; }
+  .bubble li { margin: 4px 0; }
+  .bubble code {
+    background: var(--bg-accent-muted);
+    padding: 1px 5px;
+    border-radius: 5px;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 12.5px;
+  }
+  .bubble pre {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .bubble pre code { background: none; padding: 0; }
+  .bubble table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 13px;
+  }
+  .bubble th, .bubble td {
+    border: 0.5px solid var(--border);
+    padding: 6px 8px;
+    text-align: left;
+  }
+  .bubble th { background: var(--surface-2); font-weight: 600; }
+  .bubble a { color: var(--text-accent); }
+  .bubble strong { font-weight: 600; }
+
+  /* --- Intro / PR summary cards, seeded on first load --- */
+  .pr-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0 0 8px;
+  }
+
+  .pr-card {
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+  }
+
+  .pr-card .pr-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: 13.5px;
+  }
+
+  .pr-card .pr-sub {
+    margin: 2px 0 0;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+  }
+
+  .typing-dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 3px 0;
+  }
+
+  .typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    animation: blink 1.2s infinite ease-in-out;
+  }
+
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.25; }
+    40% { opacity: 1; }
+  }
+
+  .chat-input-row {
+    border-top: 0.5px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    background: var(--surface-2);
+  }
+
+  .chat-input-row input {
+    flex: 1;
+    border: 0.5px solid var(--border);
+    background: var(--surface-1);
+    border-radius: 10px;
+    padding: 10px 13px;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    font-family: inherit;
+  }
+
+  .chat-input-row input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .chat-input-row input:focus {
+    border-color: var(--text-accent);
+  }
+
+  .send-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: var(--text-accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .send-btn i { font-size: 16px; }
+
+  .quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 16px 12px;
+  }
+
+  .quick-actions button {
+    border: 0.5px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .quick-actions button:hover {
+    color: var(--text-accent);
+    border-color: var(--text-accent);
+  }
+
+  .footnote {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 12px;
+  }
+
+  @media (max-width: 560px) {
+    body { padding: 16px 10px 10px; }
+    .msg-row { max-width: 96%; }
+    .msg-row.user { max-width: 88%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div>
+    <h1>Negotiations Agent</h1>
+    <p>Buyer copilot for PR review, vendor comparison &amp; negotiation strategy</p>
+  </div>
+  <div class="page-head-actions">
+    <button id="clearBtn" type="button"><i class="ti ti-refresh"></i> New chat</button>
+  </div>
+</div>
+
+<div class="chat-shell">
+  <div class="chat-card">
+
+    <div class="chat-header">
+      <div class="avatar"><i class="ti ti-triangle"></i></div>
+      <div class="chat-header-title">
+        <p>Negotiations agent</p>
+        <p>Buyer copilot &middot; live</p>
+      </div>
+      <div class="chat-header-right">
+        <div class="online-pill"><span class="dot"></span>Online</div>
+      </div>
+    </div>
+
+    <div id="chatBody" class="chat-body"></div>
+
+    <div class="quick-actions">
+      <button type="button" data-prompt="Why is Vendor D L1 on the pump line?">Why is Vendor D L1?</button>
+      <button type="button" data-prompt="Which lines on PR-45821 are ready for a price event?">Lines ready for a price event</button>
+      <button type="button" data-prompt="Flag the outlier bid on PR-45821 and explain why it looks off.">Explain the outlier bid</button>
+      <button type="button" data-prompt="What's a good opening negotiation strategy for PR-45900?">Negotiation strategy for PR-45900</button>
+    </div>
+
+    <div class="chat-input-row">
+      <input id="userInput" type="text" placeholder="Ask about a PR, vendor, or negotiation strategy" autocomplete="off" />
+      <button id="sendBtn" class="send-btn" aria-label="Send"><i class="ti ti-arrow-up"></i></button>
+    </div>
+
+  </div>
+
+  <p class="footnote">Answers are generated by an AI agent grounded on your negotiation data — verify before acting.</p>
+</div>
+
+<script>
+  const STORAGE_CHAT_ID = "negotiations_agent_chat_id";
+  const STORAGE_MESSAGES = "negotiations_agent_messages";
+
+  let chatId = localStorage.getItem(STORAGE_CHAT_ID) || null;
+  let messages = JSON.parse(localStorage.getItem(STORAGE_MESSAGES) || "[]");
+
+  const chatBody = document.getElementById("chatBody");
+  const userInput = document.getElementById("userInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const clearBtn = document.getElementById("clearBtn");
+
+  marked.setOptions({ breaks: true, gfm: true });
+
+  const SEED_HTML = `
+    <p style="margin:0 0 8px;">Hi, I'm the negotiations agent. Here's what's currently loaded:</p>
+    <div class="pr-cards">
+      <div class="pr-card">
+        <p class="pr-title">PR-45821 &middot; ₹2.9M budget</p>
+        <p class="pr-sub">5 lines ready for a price event &middot; 1 needs a quantity clarification &middot; 1 outlier bid to review</p>
+      </div>
+      <div class="pr-card">
+        <p class="pr-title">PR-45900 &middot; ₹1.08M budget</p>
+        <p class="pr-sub">All 5 lines ready for a price event &middot; Line 1 looks like a duplicate of a PR-45821 item</p>
+      </div>
+    </div>
+    <p style="margin:0;">What would you like to dig into?</p>
+  `;
+
+  function botAvatar() {
+    const el = document.createElement("div");
+    el.className = "avatar-sm";
+    el.innerHTML = '<i class="ti ti-triangle"></i>';
+    return el;
+  }
+
+  function renderMarkdown(text) {
+    return DOMPurify.sanitize(marked.parse(String(text || "")));
+  }
+
+  function addRow({ sender, html, save = true, rawText = "" }) {
+    const row = document.createElement("div");
+    row.className = "msg-row " + (sender === "user" ? "user" : "bot");
+
+    if (sender === "bot") {
+      row.appendChild(botAvatar());
+    }
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.innerHTML = html;
+    row.appendChild(bubble);
+
+    chatBody.appendChild(row);
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    if (save) {
+      messages.push({ sender, text: rawText || html });
+      localStorage.setItem(STORAGE_MESSAGES, JSON.stringify(messages));
+    }
+
+    return row;
+  }
+
+  function addUserMessage(text, save = true) {
+    return addRow({ sender: "user", html: DOMPurify.sanitize(text).replace(/\\n/g, "<br>"), save, rawText: text });
+  }
+
+  function addBotMessage(text, save = true) {
+    return addRow({ sender: "bot", html: renderMarkdown(text), save, rawText: text });
+  }
+
+  function addTyping() {
+    const row = document.createElement("div");
+    row.className = "msg-row bot";
+    row.id = "typingRow";
+    row.appendChild(botAvatar());
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+    row.appendChild(bubble);
+    chatBody.appendChild(row);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    return row;
+  }
+
+  function renderSeed() {
+    addRow({ sender: "bot", html: SEED_HTML, save: false });
+  }
+
+  function renderHistory() {
+    chatBody.innerHTML = "";
+    if (messages.length === 0) {
+      renderSeed();
+      return;
+    }
+    messages.forEach((m) => {
+      if (m.sender === "user") {
+        addRow({ sender: "user", html: DOMPurify.sanitize(m.text).replace(/\\n/g, "<br>"), save: false });
+      } else {
+        addRow({ sender: "bot", html: renderMarkdown(m.text), save: false });
+      }
+    });
+  }
+
+  async function sendMessage(text) {
+    const message = (text !== undefined ? text : userInput.value).trim();
+    if (!message) return;
+
+    addUserMessage(message);
+    userInput.value = "";
+    sendBtn.disabled = true;
+
+    const typing = addTyping();
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, chatId })
+      });
+
+      const data = await response.json();
+      typing.remove();
+
+      if (!response.ok) {
+        addBotMessage(`**Unable to process request.**\\n\\n${data.details || data.error || "Unknown error"}`);
+        console.error(data);
+        return;
+      }
+
+      chatId = data.chatId;
+      localStorage.setItem(STORAGE_CHAT_ID, chatId);
+      addBotMessage(data.reply);
+
+    } catch (error) {
+      typing.remove();
+      addBotMessage("**Unable to connect to the backend.**\\n\\nPlease check that the server is running.");
+      console.error(error);
+    } finally {
+      sendBtn.disabled = false;
+      userInput.focus();
+    }
+  }
+
+  function clearChat() {
+    chatId = null;
+    messages = [];
+    localStorage.removeItem(STORAGE_CHAT_ID);
+    localStorage.removeItem(STORAGE_MESSAGES);
+    chatBody.innerHTML = "";
+    renderSeed();
+  }
+
+  sendBtn.addEventListener("click", () => sendMessage());
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
+  clearBtn.addEventListener("click", clearChat);
+
+  document.querySelectorAll(".quick-actions button").forEach((btn) => {
+    btn.addEventListener("click", () => sendMessage(btn.dataset.prompt));
+  });
+
+  renderHistory();
+</script>
+
+</body>
+</html>

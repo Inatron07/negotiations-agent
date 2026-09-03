@@ -1,0 +1,20 @@
+{
+  "name": "negotiations-agent-demo",
+  "version": "1.0.0",
+  "description": "Negotiations agent (buyer copilot) chat demo, backed by the Automation Anywhere EKB chatbot API",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@elevenlabs/client": "0.12.2",
+    "@odin-ai-staging/sdk": "latest",
+    "cors": "latest",
+    "dotenv": "latest",
+    "express": "latest"
+  },
+  "overrides": {
+    "@elevenlabs/client": "0.12.2"
+  }
+}
