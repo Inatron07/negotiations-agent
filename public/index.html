@@ -563,16 +563,12 @@
     return row;
   }
 
-  function renderSeed() {
+  function renderFallbackIntro() {
     addRow({ sender: "bot", html: SEED_HTML, save: false });
   }
 
   function renderHistory() {
     chatBody.innerHTML = "";
-    if (messages.length === 0) {
-      renderSeed();
-      return;
-    }
     messages.forEach((m) => {
       if (m.sender === "user") {
         addRow({ sender: "user", html: DOMPurify.sanitize(m.text).replace(/\\n/g, "<br>"), save: false });
@@ -582,12 +578,15 @@
     });
   }
 
-  async function sendMessage(text) {
+  async function sendMessage(text, opts) {
+    const options = opts || {};
     const message = (text !== undefined ? text : userInput.value).trim();
     if (!message) return;
 
-    addUserMessage(message);
-    userInput.value = "";
+    if (!options.silent) {
+      addUserMessage(message);
+      userInput.value = "";
+    }
     sendBtn.disabled = true;
 
     const typing = addTyping();
@@ -603,7 +602,11 @@
       typing.remove();
 
       if (!response.ok) {
-        addBotMessage(`**Unable to process request.**\\n\\n${data.details || data.error || "Unknown error"}`);
+        if (options.silent) {
+          renderFallbackIntro();
+        } else {
+          addBotMessage(`**Unable to process request.**\\n\\n${data.details || data.error || "Unknown error"}`);
+        }
         console.error(data);
         return;
       }
@@ -614,11 +617,26 @@
 
     } catch (error) {
       typing.remove();
-      addBotMessage("**Unable to connect to the backend.**\\n\\nPlease check that the server is running.");
+      if (options.silent) {
+        renderFallbackIntro();
+      } else {
+        addBotMessage("**Unable to connect to the backend.**\\n\\nPlease check that the server is running.");
+      }
       console.error(error);
     } finally {
       sendBtn.disabled = false;
       userInput.focus();
+    }
+  }
+
+  function startConversation() {
+    chatBody.innerHTML = "";
+    if (messages.length === 0) {
+      // Kick the live agent for its own opening turn (grounded on real data)
+      // instead of showing static placeholder text.
+      sendMessage("Hi", { silent: true });
+    } else {
+      renderHistory();
     }
   }
 
@@ -627,8 +645,7 @@
     messages = [];
     localStorage.removeItem(STORAGE_CHAT_ID);
     localStorage.removeItem(STORAGE_MESSAGES);
-    chatBody.innerHTML = "";
-    renderSeed();
+    startConversation();
   }
 
   sendBtn.addEventListener("click", () => sendMessage());
@@ -641,7 +658,7 @@
     btn.addEventListener("click", () => sendMessage(btn.dataset.prompt));
   });
 
-  renderHistory();
+  startConversation();
 </script>
 
 </body>
