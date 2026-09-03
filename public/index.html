@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Negotiations Agent — Buyer Copilot</title>
-<meta name="description" content="Negotiations agent: a buyer copilot for reviewing purchase requisitions, comparing vendor bids, market benchmarking, vendor risk, and negotiation strategy." />
+<title>Negotiations Agent (PoC) — Buyer Copilot</title>
+<meta name="description" content="Negotiations agent (PoC): a buyer copilot for reviewing purchase requisitions, comparing vendor bids, market benchmarking, vendor risk, and negotiation strategy." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -512,6 +512,55 @@
     letter-spacing: 0.02em;
   }
 
+  /* --- Credit usage modal --- */
+  .credit-stats {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0 12px;
+  }
+  .credit-stat {
+    flex: 1;
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+    background: var(--surface-2);
+  }
+  .credit-stat-label {
+    display: block;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .credit-stat-val {
+    display: block;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .credit-bar-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--bg-accent-muted);
+    overflow: hidden;
+  }
+  .credit-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--text-accent);
+    border-radius: 999px;
+    transition: width 0.25s ease, background 0.25s ease;
+  }
+  .credit-bar-fill.warn { background: #d99a1f; }
+  .credit-bar-fill.danger { background: var(--fill-danger); }
+  .credit-status-note {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin: 10px 0 0;
+  }
+
   @media (max-width: 560px) {
     .main-content { padding: 16px 10px 10px; }
     .msg-row { max-width: 96%; }
@@ -525,9 +574,10 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-top">
-      <div class="sidebar-brand"><i class="ti ti-triangle"></i> Negotiations Agent</div>
+      <div class="sidebar-brand"><i class="ti ti-triangle"></i> Negotiations Agent (PoC)</div>
       <button id="newChatBtn" class="sidebar-btn primary" type="button"><i class="ti ti-plus"></i> New chat</button>
       <button id="aboutBtn" class="sidebar-btn" type="button"><i class="ti ti-info-circle"></i> About / Read me</button>
+      <button id="creditsBtn" class="sidebar-btn" type="button"><i class="ti ti-coin"></i> Credit usage</button>
     </div>
     <div class="sidebar-history">
       <p class="sidebar-label">History</p>
@@ -543,7 +593,7 @@
       <div class="page-head-left">
         <button id="sidebarToggle" class="icon-btn" type="button" aria-label="Toggle sidebar"><i class="ti ti-layout-sidebar"></i></button>
         <div>
-          <h1>Negotiations Agent</h1>
+          <h1>Negotiations Agent (PoC)</h1>
           <p>Buyer copilot for PR review, market benchmarking, vendor risk &amp; negotiation strategy</p>
         </div>
       </div>
@@ -555,7 +605,7 @@
         <div class="chat-header">
           <div class="avatar"><i class="ti ti-triangle"></i></div>
           <div class="chat-header-title">
-            <p>Negotiations agent</p>
+            <p>Negotiations agent (PoC)</p>
             <p>Buyer copilot &middot; live</p>
           </div>
           <div class="chat-header-right">
@@ -581,6 +631,8 @@
 
       </div>
 
+      <p class="footnote">This is a Negotiations Agent (PoC) — a proof of concept for you to try out.</p>
+
     </div>
 
   </div>
@@ -589,7 +641,7 @@
 <div id="aboutModal" class="modal-overlay">
   <div class="modal-card">
     <button id="aboutClose" class="icon-btn modal-close" type="button" aria-label="Close"><i class="ti ti-x"></i></button>
-    <h2>Negotiations Agent — Read Me</h2>
+    <h2>Negotiations Agent (PoC) — Read Me</h2>
     <p>An AI buyer copilot for the procurement negotiation workflow, grounded on real purchase requisition (PR), vendor bid, and market-intelligence data via Automation Anywhere's EKB (Enterprise Knowledge Base) GenAI agent layer.</p>
 
     <h3>Features</h3>
@@ -608,7 +660,42 @@
       <li>Answers are AI-generated and grounded on the loaded procurement data — always verify before acting on a recommendation.</li>
     </ul>
 
-    <div class="modal-footer">Negotiations PoC</div>
+    <div class="modal-footer">This is a Negotiations Agent (PoC) — try it out and share your feedback.</div>
+  </div>
+</div>
+
+<div id="creditsModal" class="modal-overlay">
+  <div class="modal-card">
+    <button id="creditsClose" class="icon-btn modal-close" type="button" aria-label="Close"><i class="ti ti-x"></i></button>
+    <h2>Credit Usage</h2>
+    <p>This Negotiations Agent (PoC) demo runs on a fixed credit budget so it stays a fair trial for everyone — separate from the live production account's real plan.</p>
+
+    <div class="credit-stats">
+      <div class="credit-stat">
+        <span class="credit-stat-label">Used</span>
+        <span id="creditUsedVal" class="credit-stat-val">0</span>
+      </div>
+      <div class="credit-stat">
+        <span class="credit-stat-label">Remaining</span>
+        <span id="creditRemainingVal" class="credit-stat-val">1000</span>
+      </div>
+      <div class="credit-stat">
+        <span class="credit-stat-label">Planned</span>
+        <span id="creditPlannedVal" class="credit-stat-val">1000</span>
+      </div>
+    </div>
+
+    <div class="credit-bar-track"><div id="creditBarFill" class="credit-bar-fill"></div></div>
+    <p id="creditStatusNote" class="credit-status-note">Loading current usage…</p>
+
+    <h3>How this is estimated</h3>
+    <ul>
+      <li>Every reply costs a small fixed platform fee plus a token-based cost, mirroring Automation Anywhere EKB's credit model for the underlying Claude Sonnet 5 agent.</li>
+      <li>This 1,000-credit allowance is scoped only to this demo website — it does not draw from or reflect the production account's actual plan or usage.</li>
+      <li>You'll see an in-chat warning at 50% and 75% used. At 100%, this demo stops responding and asks you to contact the Dev team for more credits.</li>
+    </ul>
+
+    <div class="modal-footer">This is a Negotiations Agent (PoC) — try it out and share your feedback.</div>
   </div>
 </div>
 
@@ -629,11 +716,19 @@
   const aboutModal = document.getElementById("aboutModal");
   const aboutBtn = document.getElementById("aboutBtn");
   const aboutClose = document.getElementById("aboutClose");
+  const creditsModal = document.getElementById("creditsModal");
+  const creditsBtn = document.getElementById("creditsBtn");
+  const creditsClose = document.getElementById("creditsClose");
+  const creditUsedVal = document.getElementById("creditUsedVal");
+  const creditRemainingVal = document.getElementById("creditRemainingVal");
+  const creditPlannedVal = document.getElementById("creditPlannedVal");
+  const creditBarFill = document.getElementById("creditBarFill");
+  const creditStatusNote = document.getElementById("creditStatusNote");
 
   marked.setOptions({ breaks: true, gfm: true });
 
   const SEED_HTML = `
-    <p style="margin:0 0 8px;">Hi, I'm the negotiations agent. Here's what's currently loaded:</p>
+    <p style="margin:0 0 8px;">Hi, I'm the negotiations agent (PoC). Here's what's currently loaded:</p>
     <div class="pr-cards">
       <div class="pr-card">
         <p class="pr-title">PR-45821 &middot; ₹2.9M budget</p>
@@ -833,6 +928,86 @@
     renderSidebar();
   }
 
+  // ---------- Credit usage ----------
+
+  const STORAGE_CREDIT_WARNED = "negotiations_agent_credit_warned_v1";
+  let creditWarned = JSON.parse(localStorage.getItem(STORAGE_CREDIT_WARNED) || "{}");
+  let creditsExhausted = false;
+
+  function saveCreditWarned() {
+    localStorage.setItem(STORAGE_CREDIT_WARNED, JSON.stringify(creditWarned));
+  }
+
+  function updateCreditUI(usage) {
+    if (!usage) return;
+    creditUsedVal.textContent = usage.used;
+    creditRemainingVal.textContent = usage.remaining;
+    creditPlannedVal.textContent = usage.planned;
+    creditBarFill.style.width = usage.percent + "%";
+    creditBarFill.classList.toggle("warn", usage.percent >= 50 && usage.percent < 90);
+    creditBarFill.classList.toggle("danger", usage.percent >= 90);
+
+    if (usage.remaining <= 0) {
+      creditStatusNote.textContent = "Credit limit reached — this demo has stopped responding. Please contact the Dev team for more credits.";
+    } else if (usage.percent >= 75) {
+      creditStatusNote.textContent = "75%+ of this demo's credit allowance is used — approaching the limit.";
+    } else if (usage.percent >= 50) {
+      creditStatusNote.textContent = "50%+ of this demo's credit allowance is used.";
+    } else {
+      creditStatusNote.textContent = "Usage is well within budget.";
+    }
+  }
+
+  function applyCreditLimitState(usage) {
+    creditsExhausted = !!(usage && usage.remaining <= 0);
+    userInput.disabled = creditsExhausted;
+    sendBtn.disabled = creditsExhausted;
+    userInput.placeholder = creditsExhausted
+      ? "Credit limit reached — contact the Dev team for more credits"
+      : "Ask about a PR, vendor, market benchmark, or negotiation strategy";
+  }
+
+  function maybeWarnOnUsage(usage) {
+    if (!usage) return;
+    if (usage.percent >= 100 && !creditWarned["100"]) {
+      addBotMessage(
+        "**Credit limit reached.** This Negotiations Agent (PoC) demo has used its full " +
+        usage.planned + "-credit allowance. Please contact the Dev team for more credits."
+      );
+      creditWarned["100"] = true;
+      saveCreditWarned();
+    } else if (usage.percent >= 75 && !creditWarned["75"]) {
+      addBotMessage(
+        "⚠️ Heads up — this demo has used **" + usage.percent + "%** of its " +
+        usage.planned + "-credit allowance (" + usage.used + "/" + usage.planned + ")."
+      );
+      creditWarned["75"] = true;
+      saveCreditWarned();
+    } else if (usage.percent >= 50 && !creditWarned["50"]) {
+      addBotMessage(
+        "ℹ️ This demo has used **" + usage.percent + "%** of its " +
+        usage.planned + "-credit allowance (" + usage.used + "/" + usage.planned + ")."
+      );
+      creditWarned["50"] = true;
+      saveCreditWarned();
+    }
+    updateCreditUI(usage);
+    applyCreditLimitState(usage);
+  }
+
+  async function refreshUsage() {
+    try {
+      const res = await fetch("/api/usage");
+      const usage = await res.json();
+      updateCreditUI(usage);
+      applyCreditLimitState(usage);
+      return usage;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
   // ---------- Chat ----------
 
   async function sendMessage(text, opts) {
@@ -840,6 +1015,17 @@
     const session = getActive();
     const message = (text !== undefined ? text : userInput.value).trim();
     if (!message) return;
+
+    if (creditsExhausted) {
+      if (!options.silent) {
+        addUserMessage(message);
+        userInput.value = "";
+        addBotMessage(
+          "**Credit limit reached.** This demo has used its full allowance and can't send more requests right now — please contact the Dev team for more credits."
+        );
+      }
+      return;
+    }
 
     if (!options.silent) {
       addUserMessage(message);
@@ -860,7 +1046,14 @@
       typing.remove();
 
       if (!response.ok) {
-        if (options.silent) {
+        if (data.limitReached) {
+          maybeWarnOnUsage(data.usage);
+          if (!options.silent) {
+            const errText = "**Credit limit reached.** " + (data.details || "Please contact the Dev team for more credits.");
+            addBotMessage(errText);
+            session.messages.push({ sender: "bot", text: errText });
+          }
+        } else if (options.silent) {
           renderFallbackIntro();
         } else {
           const errText = `**Unable to process request.**\n\n${data.details || data.error || "Unknown error"}`;
@@ -874,6 +1067,7 @@
       session.chatId = data.chatId;
       addBotMessage(data.reply);
       session.messages.push({ sender: "bot", text: data.reply });
+      maybeWarnOnUsage(data.usage);
 
     } catch (error) {
       typing.remove();
@@ -890,8 +1084,8 @@
       session.updatedAt = Date.now();
       saveSessions();
       renderSidebar();
-      sendBtn.disabled = false;
-      userInput.focus();
+      sendBtn.disabled = creditsExhausted;
+      if (!creditsExhausted) userInput.focus();
     }
   }
 
@@ -949,10 +1143,22 @@
     if (e.target === aboutModal) aboutModal.classList.remove("active");
   });
 
+  // ---------- Credits modal ----------
+
+  creditsBtn.addEventListener("click", () => {
+    creditsModal.classList.add("active");
+    refreshUsage();
+  });
+  creditsClose.addEventListener("click", () => creditsModal.classList.remove("active"));
+  creditsModal.addEventListener("click", (e) => {
+    if (e.target === creditsModal) creditsModal.classList.remove("active");
+  });
+
   // ---------- Init ----------
 
   renderSidebar();
   renderActiveChat();
+  refreshUsage();
 </script>
 
 </body>

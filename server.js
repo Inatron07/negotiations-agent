@@ -25,8 +25,44 @@ const chatSDK = new ChatSDK({
   apiSecret: process.env.CHATBOT_API_SECRET
 });
 
+// ---------- Credit usage tracking (scoped to this demo/site only) ----------
+// This is a separate, self-imposed budget for the public demo — it has no
+// relationship to the real EKB account's actual plan/usage. It approximates
+// the documented EKB credit model (platform action credits + LLM token
+// credits at Claude Sonnet 5 rates) since the SDK response doesn't expose
+// real token counts.
+const PLANNED_CREDITS = 1000;
+const SONNET_5_RATE = { inputPer1M: 2000, outputPer1M: 10000 }; // credits per 1M tokens
+let usedCredits = 0;
+
+function estimateTokens(text) {
+  // Rough heuristic: ~4 characters per token.
+  return Math.ceil((text || "").length / 4);
+}
+
+function estimateTurnCost(inputText, outputText) {
+  const inputTokens = estimateTokens(inputText);
+  const outputTokens = estimateTokens(outputText);
+  const platformCredits = 1 /* message */ + 1 /* knowledgebase tool call */;
+  const tokenCredits =
+    (inputTokens / 1_000_000) * SONNET_5_RATE.inputPer1M +
+    (outputTokens / 1_000_000) * SONNET_5_RATE.outputPer1M;
+  return platformCredits + tokenCredits;
+}
+
+function usageSnapshot() {
+  const used = Math.min(Math.round(usedCredits), PLANNED_CREDITS);
+  const remaining = Math.max(PLANNED_CREDITS - used, 0);
+  const percent = Math.min(Math.round((used / PLANNED_CREDITS) * 100), 100);
+  return { used, planned: PLANNED_CREDITS, remaining, percent };
+}
+
 app.get("/healthz", (req, res) => {
   res.json({ ok: true });
+});
+
+app.get("/api/usage", (req, res) => {
+  res.json(usageSnapshot());
 });
 
 app.post("/api/chat", async (req, res) => {
@@ -36,6 +72,16 @@ app.post("/api/chat", async (req, res) => {
     if (!message || !message.trim()) {
       return res.status(400).json({
         error: "Message is required."
+      });
+    }
+
+    if (usedCredits >= PLANNED_CREDITS) {
+      return res.status(402).json({
+        error: "Credit limit reached.",
+        details:
+          "This demo has used its full 1,000-credit allowance. Please contact the Dev team for more credits.",
+        limitReached: true,
+        usage: usageSnapshot()
       });
     }
 
@@ -87,9 +133,12 @@ app.post("/api/chat", async (req, res) => {
       response?.text ||
       JSON.stringify(response, null, 2);
 
+    usedCredits += estimateTurnCost(message, reply);
+
     res.json({
       chatId: activeChatId,
-      reply
+      reply,
+      usage: usageSnapshot()
     });
 
   } catch (error) {
