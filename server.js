@@ -43,6 +43,13 @@ app.post("/api/chat", async (req, res) => {
 
     if (!activeChatId) {
       const chat = await chatSDK.createChat("Negotiations Agent Chat");
+
+      if (typeof chat === "string") {
+        throw new Error(
+          "The chatbot API returned a web page instead of data. CHATBOT_BASE_URL is probably pointed at the app's front-end host instead of its API host — double-check it against the API docs/console."
+        );
+      }
+
       activeChatId = chat.chat_id || chat.id;
     }
 
@@ -53,6 +60,12 @@ app.post("/api/chat", async (req, res) => {
       useKnowledgebase: true,
       skipStream: true
     });
+
+    if (typeof response === "string") {
+      throw new Error(
+        "The chatbot API returned a web page instead of data. CHATBOT_BASE_URL is probably pointed at the app's front-end host instead of its API host — double-check it against the API docs/console."
+      );
+    }
 
     console.log("Full chatbot response:", JSON.stringify(response, null, 2));
 
