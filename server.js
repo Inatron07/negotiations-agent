@@ -31,10 +31,10 @@ const chatSDK = new ChatSDK({
 // the documented EKB credit model (platform action credits + LLM token
 // credits at Claude Sonnet 5 rates) since the SDK response doesn't expose
 // real token counts.
-const PLANNED_CREDITS = 1000;
+const PLANNED_CREDITS = 5000;
 const SONNET_5_RATE = { inputPer1M: 2000, outputPer1M: 10000 }; // credits per 1M tokens
 // Seeded at 0.678 (matching the "0.678k" figure shown on the real EKB account at the
-// time this demo budget was carved out) so Remaining starts at 1000 - 0.678 = 999.32.
+// time this demo budget was carved out) so Remaining starts at 5000 - 0.678 = 4999.32.
 let usedCredits = 0.678;
 
 function estimateTokens(text) {
@@ -85,7 +85,7 @@ app.post("/api/chat", async (req, res) => {
       return res.status(402).json({
         error: "Credit limit reached.",
         details:
-          "This demo has used its full 1,000-credit allowance. Please contact the Dev team for more credits.",
+          "This demo has used its full 5,000-credit allowance. Please contact the Dev team for more credits.",
         limitReached: true,
         usage: usageSnapshot()
       });

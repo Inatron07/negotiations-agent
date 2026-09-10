@@ -677,11 +677,11 @@
       </div>
       <div class="credit-stat">
         <span class="credit-stat-label">Remaining</span>
-        <span id="creditRemainingVal" class="credit-stat-val">1000</span>
+        <span id="creditRemainingVal" class="credit-stat-val">5000</span>
       </div>
       <div class="credit-stat">
         <span class="credit-stat-label">Planned</span>
-        <span id="creditPlannedVal" class="credit-stat-val">1000</span>
+        <span id="creditPlannedVal" class="credit-stat-val">5000</span>
       </div>
     </div>
 
@@ -691,7 +691,7 @@
     <h3>How this is estimated</h3>
     <ul>
       <li>Every reply costs a small fixed platform fee plus a token-based cost, mirroring Automation Anywhere EKB's credit model for the underlying Claude Sonnet 5 agent.</li>
-      <li>This 1,000-credit allowance is scoped only to this demo website — it does not draw from or reflect the production account's actual plan or usage.</li>
+      <li>This 5,000-credit allowance is scoped only to this demo website — it does not draw from or reflect the production account's actual plan or usage.</li>
       <li>You'll see an in-chat warning at 50% and 75% used. At 100%, this demo stops responding and asks you to contact the Dev team for more credits.</li>
     </ul>
 
@@ -939,7 +939,7 @@
   }
 
   // Formats a credit figure as a plain number, trimmed to at most 3
-  // decimal places (e.g. 0.678, 999.32, 1000) — no unit conversion.
+  // decimal places (e.g. 0.678, 4999.32, 5000) — no unit conversion.
   function formatCredits(n) {
     if (n === undefined || n === null) return "0";
     if (Number.isInteger(n)) return String(n);
