@@ -12,7 +12,8 @@
     "@odin-ai-staging/sdk": "latest",
     "cors": "latest",
     "dotenv": "latest",
-    "express": "latest"
+    "express": "latest",
+    "ioredis": "^5.11.1"
   },
   "overrides": {
     "@elevenlabs/client": "0.12.2"
